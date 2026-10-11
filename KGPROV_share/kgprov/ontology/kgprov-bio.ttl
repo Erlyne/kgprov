@@ -1,0 +1,235 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix kgp: <https://w3id.org/kgprov#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/kgprov> a owl:Ontology ;
+    dct:title "KGPROV: PROV profile for constrained generative KG pipelines"@en ;
+    rdfs:comment """In a generative pipeline the specification\r
+underdetermines the execution: the plan bounds a space of possible\r
+outputs from which one is sampled. Provenance for such systems must\r
+record not only what happened, but what the space of possible happenings\r
+was, and where that space came from."""@en ;
+    owl:imports <http://www.w3.org/ns/prov-o#> .
+
+kgp:BucketConstraintLookup a owl:Class ;
+    rdfs:comment "Phase 4. Resolves the ordered type pair against Omega."@en ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:EscalationSearchAgent a owl:Class ;
+    rdfs:comment "Delegated to via prov:actedOnBehalfOf. The only agent whose output space is not enumerable."@en ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:ExtractionAgent a owl:Class ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:NormalizationAgent a owl:Class ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:NormalizedPredicate a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:OntologySnapshot a owl:Class ;
+    rdfs:comment "A versioned ontology release. Time-indexed via prov:generatedAtTime; successive releases linked by prov:wasRevisionOf."@en ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:PrimaryEvaluatorAgent a owl:Class ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ14",
+        "CQ2" .
+
+kgp:ProvisionalConceptID a owl:Class ;
+    rdfs:comment "Deterministic UNMAPPED hash. Merges into a canonical identifier via prov:wasRevisionOf when coverage improves."@en ;
+    rdfs:subClassOf kgp:CanonicalConceptID ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12" .
+
+kgp:RawSpan a owl:Class ;
+    rdfs:comment "Verbatim source text. prov:wasQuotedFrom, not merely wasDerivedFrom."@en ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ9" .
+
+kgp:RelationExtractionAgent a owl:Class ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:SourceManuscript a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:TargetChunk a owl:Class ;
+    rdfs:comment "Linked to the manuscript via prov:hadPrimarySource."@en ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:VerbatimAction a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ9" .
+
+kgp:WindowScoping a owl:Class ;
+    rdfs:comment "Phase 3. Bounds the participant space to entities in the extraction window."@en ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:bioConditions a owl:DatatypeProperty ;
+    rdfs:comment """Species, cell line, dose, route, assay context. An\r
+attribute of the edge. Declared and not emitted: this pipeline extracts\r
+no assay context, so the term states what such a record would carry\r
+without asserting that this one does."""@en ;
+    rdfs:domain kgp:KnowledgeGraphEdge ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:cuiValue a owl:DatatypeProperty ;
+    rdfs:comment """The registry identifier an entity stands for. Declared\r
+because CQ12 reads it: the criterion admits what a competency query\r
+traverses, so a term the query set depends on belongs to the model."""@en ;
+    rdfs:domain kgp:CanonicalConceptID ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12" .
+
+kgp:mappingTier a owl:DatatypeProperty ;
+    rdfs:comment """Which resolution path produced the identifier: LOCAL for\r
+the indexed lookup, WEB for the unbounded escalation. PROV records that an\r
+activity generated an entity and has no predicate for which of two\r
+substitutable routes did it, which is what CQ12 needs, since the whole\r
+question is how much of the graph rests on the unbounded one."""@en ;
+    rdfs:domain kgp:CanonicalConceptID ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12" .
+
+kgp:modality a owl:DatatypeProperty ;
+    rdfs:comment """ASSERTED, HYPOTHESIZED or PROPOSED: the source's commitment\r
+to the claim. Distinct from the pipeline's confidence in its own mapping, which\r
+Phase 2 records separately, and distinct from polarity."""@en ;
+    rdfs:domain kgp:KnowledgeGraphEdge ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ10" .
+
+kgp:ontologyVersion a owl:DatatypeProperty ;
+    rdfs:comment "The ontology release identifiers resolve against."@en ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:polarity a owl:DatatypeProperty ;
+    rdfs:comment """POSITIVE or NEGATIVE: what the source claims about the\r
+interaction, not what this record claims about it. Enumerated at decode time in\r
+Phase 3, which is why the PolarityInvalid reason code cannot fire. An\r
+attribute of the edge, like modality: neither describes how the record\r
+came to exist, so neither carries PROV semantics."""@en ;
+    rdfs:domain kgp:KnowledgeGraphEdge ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ10" .
+
+kgp:resolvedString a owl:DatatypeProperty ;
+    rdfs:comment """The mention text after abbreviation expansion and\r
+coreference resolution. A resolved string is a string, so it is an\r
+attribute of the mention rather than an entity with a lineage."""@en ;
+    rdfs:domain kgp:GroundedMention ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" .
+
+kgp:semanticCategory a owl:DatatypeProperty ;
+    rdfs:comment """CHEMICAL or DISEASE. A category is a value, not an\r
+entity with a lineage, so nothing derives from it and nothing generates\r
+it."""@en ;
+    rdfs:domain kgp:GroundedMention ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ11" .
+
+kgp:sourceUrl a owl:DatatypeProperty ;
+    rdfs:comment "The external location an attested claim was read from."@en ;
+    rdfs:domain prov:Entity ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ6" .
+
+<https://w3id.org/kgprov/bio> a owl:Ontology ;
+    owl:imports <http://www.w3.org/ns/prov-o#>,
+        <https://w3id.org/kgprov/core> .
+
+kgp:GroundedMention a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ14",
+        "CQ2" .
+
+kgp:CanonicalConceptID a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12",
+        "CQ13" .
+
+kgp:KnowledgeGraphEdge a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ10",
+        "CQ9" .
+

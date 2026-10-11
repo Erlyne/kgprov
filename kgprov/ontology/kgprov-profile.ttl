@@ -1,0 +1,712 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix kgp: <https://w3id.org/kgprov#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/kgprov> a owl:Ontology ;
+    dct:title "KGPROV: PROV profile for constrained generative KG pipelines"@en ;
+    rdfs:comment """In a generative pipeline the specification\r
+underdetermines the execution: the plan bounds a space of possible\r
+outputs from which one is sampled. Provenance for such systems must\r
+record not only what happened, but what the space of possible happenings\r
+was, and where that space came from."""@en ;
+    owl:imports <http://www.w3.org/ns/prov-o#> .
+
+kgp:ActionNotVerbatim a kgp:RejectionReason .
+
+kgp:CategoryInvalid a kgp:RejectionReason .
+
+kgp:Confirmed a kgp:AttestationOutcome ;
+    rdfs:label "confirmed"@en .
+
+kgp:DerivedConstraintSpace a owl:Class ;
+    rdfs:label "Derived Constraint Space"@en ;
+    rdfs:comment """Computed during execution from upstream results, therefore\r
+not recoverable from the plan. Re-executing against pinned dependencies\r
+rebuilds it; a trace that did not capture it does not, and re-execution is\r
+not available to a provenance consumer. Phase 2 candidate sets and Phase 3\r
+CUI enums."""@en ;
+    rdfs:subClassOf kgp:ConstraintSpace ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ14",
+        "CQ3" .
+
+kgp:DroppedFromBatch a kgp:RejectionReason ;
+    rdfs:comment "Model omitted the row. Distinct from deliberate rejection; conflating them destroys the review queue."@en .
+
+kgp:EscalationSearchAgent a owl:Class ;
+    rdfs:comment "Delegated to via prov:actedOnBehalfOf. The only agent whose output space is not enumerable."@en ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:Garbled a kgp:RejectionReason .
+
+kgp:NoConstraintSchema a kgp:RejectionReason .
+
+kgp:NoInteraction a kgp:RejectionReason .
+
+kgp:PolarityInvalid a kgp:RejectionReason ;
+    rdfs:comment """Polarity outside {POSITIVE, NEGATIVE}. Phase 3 compiles\r
+the enum into the tool schema, so this cannot fire; the guard exists because\r
+coercing an unparseable polarity to POSITIVE would invert the source's\r
+claim, which is the failure the pipeline exists to prevent."""@en .
+
+kgp:PrimaryEvaluatorAgent a owl:Class ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ14",
+        "CQ2" .
+
+kgp:ProvisionalConceptID a owl:Class ;
+    rdfs:comment "Deterministic UNMAPPED hash. Merges into a canonical identifier via prov:wasRevisionOf when coverage improves."@en ;
+    rdfs:subClassOf kgp:CanonicalConceptID ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12" .
+
+kgp:RawSpan a owl:Class ;
+    rdfs:comment "Verbatim source text. prov:wasQuotedFrom, not merely wasDerivedFrom."@en ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ9" .
+
+kgp:Refuted a kgp:AttestationOutcome ;
+    rdfs:label "refuted"@en .
+
+kgp:SpanNotInChunk a kgp:RejectionReason .
+
+kgp:StaticConstraintSpace a owl:Class ;
+    rdfs:label "Static Constraint Space"@en ;
+    rdfs:comment """Supplied as a pipeline parameter and recoverable from\r
+the plan. The Phase 1 semantic category enum, and the Phase 4 predicate\r
+enums, which are lookups into a fixed table keyed by the upstream type\r
+pair."""@en ;
+    rdfs:subClassOf kgp:ConstraintSpace ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ14" .
+
+kgp:Unverifiable a kgp:AttestationOutcome ;
+    rdfs:label "unverifiable"@en .
+
+kgp:VerbatimAction a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ9" .
+
+kgp:assesses a owl:ObjectProperty ;
+    rdfs:comment """An independent assessment of an entity, deliberately not\r
+a derivation of it: making gold part of the derivation would imply the\r
+pipeline consumed it. The range is prov:Entity rather than\r
+kgp:GroundedMention because this is a core term and a core term may not\r
+refer to the domain module -- what gets assessed is a mention here and\r
+something else in another pipeline. kgprov-shapes.ttl narrows it for this\r
+one."""@en ;
+    rdfs:domain kgp:GoldAnnotation ;
+    rdfs:range prov:Entity ;
+    rdfs:subPropertyOf prov:wasInfluencedBy ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:attestationOutcome a owl:ObjectProperty ;
+    rdfs:domain kgp:Attestation ;
+    rdfs:range kgp:AttestationOutcome ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13",
+        "CQ6" .
+
+kgp:attestedAgainst a owl:ObjectProperty ;
+    rdfs:comment "The authority state the claim was checked against. Range should be a time-indexed prov:specializationOf a general resource, never a mutable collection."@en ;
+    rdfs:domain kgp:Attestation ;
+    rdfs:range prov:Entity ;
+    rdfs:subPropertyOf prov:used ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "MEDIUM" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ6" .
+
+kgp:bucket a owl:AnnotationProperty ;
+    rdfs:label "PROV coverage bucket"@en ;
+    rdfs:comment "native = core PROV expresses it already; extension = a profile term is needed."@en .
+
+kgp:callBudget a owl:DatatypeProperty ;
+    rdfs:label "call budget"@en ;
+    rdfs:comment "Ceiling the controller imposed on tool calls. A limit asked for in a prompt is a request; this is the limit that was enforced."@en ;
+    rdfs:domain kgp:UnboundedGeneration ;
+    rdfs:range xsd:integer ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:captureCost a owl:AnnotationProperty ;
+    rdfs:label "capture cost"@en ;
+    rdfs:comment "LOW | MEDIUM | HIGH - engineering effort to populate. Informs pruning under time constraints."@en .
+
+kgp:cardinality a owl:DatatypeProperty ;
+    rdfs:comment "Size of the space at the moment it bounded a generation."@en ;
+    rdfs:domain kgp:ConstraintSpace ;
+    rdfs:range xsd:integer ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2",
+        "CQ3" .
+
+kgp:checkKind a owl:DatatypeProperty ;
+    rdfs:comment "EXISTENCE, LEXICAL, or TYPE."@en ;
+    rdfs:domain kgp:VerificationCheck ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:checkOutcome a owl:DatatypeProperty ;
+    rdfs:comment """Whether the check passed. A fabricated identifier is\r
+exactly attestationOutcome=Refuted with the EXISTENCE check failed; no\r
+separate fabrication flag is defined, because it would restate these two\r
+facts and could contradict them."""@en ;
+    rdfs:domain kgp:VerificationCheck ;
+    rdfs:range xsd:boolean ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:constraintEnforcement a owl:DatatypeProperty ;
+    rdfs:label "constraint enforcement"@en ;
+    rdfs:comment """How the admissible set was applied: DECODE_TIME (the\r
+provider masked out-of-set tokens, so an excluded value could not have\r
+been produced), POST_VALIDATED (the set was stated in the prompt and\r
+checked afterwards, so the model could have produced it), or UNENFORCED.\r
+PROV records that an activity used a plan; it has no predicate for\r
+whether the plan's enumeration bound generation or merely described\r
+it. The distinction decides whether a rejection count is a true zero or\r
+a lower bound."""@en ;
+    rdfs:domain kgp:ConstraintSpace ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11" .
+
+kgp:cuiValue a owl:DatatypeProperty ;
+    rdfs:comment """The registry identifier an entity stands for. Declared\r
+because CQ12 reads it: the criterion admits what a competency query\r
+traverses, so a term the query set depends on belongs to the model."""@en ;
+    rdfs:domain kgp:CanonicalConceptID ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12" .
+
+kgp:enforcementArtifact a owl:DatatypeProperty ;
+    rdfs:label "enforcement artifact"@en ;
+    rdfs:comment """Content hash of the tool schema or grammar actually sent\r
+to the provider, so the enforcement claim can be checked rather than taken\r
+on trust: a space whose recorded members do not match the artifact that was\r
+transmitted did not bound the generation it is attached to. A hash rather\r
+than the artifact itself, because the admissible values are already carried\r
+by the space's qualified memberships and a per-call enum would duplicate the\r
+largest part of the graph."""@en ;
+    rdfs:domain kgp:ConstraintSpace ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11" .
+
+kgp:excluded a owl:ObjectProperty ;
+    rdfs:label "excluded"@en ;
+    rdfs:comment "Entity present in the input space and absent from the output space. The record of what was ruled out."@en ;
+    rdfs:domain kgp:NarrowingActivity ;
+    rdfs:range prov:Entity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "MEDIUM" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:exclusionReason a owl:DatatypeProperty ;
+    rdfs:domain kgp:NarrowingActivity ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:goldSurvived a owl:DatatypeProperty ;
+    rdfs:label "gold survived"@en ;
+    rdfs:comment """Whether the known-correct value was still a member of\r
+this stage's output space. Recorded only where ground truth exists.\r
+\r
+Strictly a compression rather than an expressiveness gap: the same fact\r
+is derivable by asking whether the gold value is a member of the stage's\r
+output space, which core PROV plus kgp:ConstraintSpace already express.\r
+Full per-stage membership is expensive: the six stages' output\r
+cardinalities sum to 944,267 member slots on this run, and the replay\r
+that recorded them came out 16.7M triples larger than the compact graph.\r
+This costs one boolean per stage. The term is retained as a cost decision\r
+and labelled as one: the alternative is to compute stage attribution\r
+outside the graph and report it as a provenance result, which answers the\r
+question somewhere other than in the record."""@en ;
+    rdfs:domain kgp:NarrowingActivity ;
+    rdfs:range xsd:boolean ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:goldValue a owl:DatatypeProperty ;
+    rdfs:comment "The correct value according to the human assessment."@en ;
+    rdfs:domain kgp:GoldAnnotation ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:hadRejectionReason a owl:ObjectProperty ;
+    rdfs:domain prov:Invalidation ;
+    rdfs:range kgp:RejectionReason ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ9" .
+
+kgp:inputCardinality a owl:DatatypeProperty ;
+    rdfs:range xsd:integer ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:invocationOrdinal a owl:DatatypeProperty ;
+    rdfs:comment "Position in the agent loop, so a sequence of attempts can be read back in order."@en ;
+    rdfs:domain kgp:ToolInvocation ;
+    rdfs:range xsd:integer ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:isRepeatable a owl:DatatypeProperty ;
+    rdfs:comment """False where the activity consumed external mutable state.\r
+Repeating the step cannot recreate the conditions it ran under. Repeatability\r
+is the least demanding of the three standard notions, so its failure carries\r
+replicability and reproducibility with it and only attestation survives."""@en ;
+    rdfs:domain prov:Activity ;
+    rdfs:range xsd:boolean ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ6" .
+
+kgp:mappingTier a owl:DatatypeProperty ;
+    rdfs:comment """Which resolution path produced the identifier: LOCAL for\r
+the indexed lookup, WEB for the unbounded escalation. PROV records that an\r
+activity generated an entity and has no predicate for which of two\r
+substitutable routes did it, which is what CQ12 needs, since the whole\r
+question is how much of the graph rests on the unbounded one."""@en ;
+    rdfs:domain kgp:CanonicalConceptID ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12" .
+
+kgp:member a owl:ObjectProperty ;
+    rdfs:domain kgp:SpaceMembership ;
+    rdfs:range prov:Entity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:memberValue a owl:DatatypeProperty ;
+    rdfs:comment "The literal admissible value a space member stands for. Without it a recorded space is a set of opaque nodes and reachability cannot be asked of it."@en ;
+    rdfs:domain prov:Entity ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ2" .
+
+kgp:modality a owl:DatatypeProperty ;
+    rdfs:comment """ASSERTED, HYPOTHESIZED or PROPOSED: the source's commitment\r
+to the claim. Distinct from the pipeline's confidence in its own mapping, which\r
+Phase 2 records separately, and distinct from polarity."""@en ;
+    rdfs:domain kgp:KnowledgeGraphEdge ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ10" .
+
+kgp:module a owl:AnnotationProperty ;
+    rdfs:label "module"@en ;
+    rdfs:comment """core | domain. Which half of the profile a term belongs\r
+to. `core` is the constraint, narrowing and attestation vocabulary, which\r
+refers to nothing biomedical and which a pipeline in another domain would\r
+import unchanged; `domain` is what this particular pipeline manipulates --\r
+manuscripts, chunks, spans, descriptors, its five software agents -- and is\r
+in principle replaceable by prov:type. tools/split_modules.py emits the two\r
+as separate ontology documents and enforces the invariant that makes the\r
+split mean something: no core term may refer to a domain term. The\r
+partition is recorded here rather than in the tool so it is a property of\r
+the vocabulary, checkable by anyone who loads it."""@en .
+
+kgp:motivatedByCQ a owl:AnnotationProperty ;
+    rdfs:label "motivated by competency question"@en ;
+    rdfs:comment "Identifier of a CQ that traverses this term. Terms with no value are pruning candidates."@en .
+
+kgp:narrowedFrom a owl:ObjectProperty ;
+    rdfs:label "narrowed from"@en ;
+    rdfs:domain kgp:ConstraintSpace ;
+    rdfs:range kgp:ConstraintSpace ;
+    rdfs:subPropertyOf prov:wasDerivedFrom ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:narrowingStage a owl:DatatypeProperty ;
+    rdfs:label "narrowing stage"@en ;
+    rdfs:comment """Which stage of the narrowing chain this activity is:\r
+DENSE_RETRIEVAL, SPARSE_RETRIEVAL, RANK_FUSION, TYPE_FILTER,\r
+CROSS_ENCODER_RERANK, SCORE_FLOOR. A value rather than six subclasses:\r
+CQ3 is answered by the stage identity together with the input and output\r
+cardinalities, which does not require the stages to be distinct classes,\r
+and six classes no query names would be six terms the criterion removes."""@en ;
+    rdfs:domain kgp:NarrowingActivity ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:outputCardinality a owl:DatatypeProperty ;
+    rdfs:range xsd:integer ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:phase a owl:DatatypeProperty ;
+    rdfs:comment "Which pipeline phase an activity belongs to."@en ;
+    rdfs:domain prov:Activity ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11" .
+
+kgp:polarity a owl:DatatypeProperty ;
+    rdfs:comment """POSITIVE or NEGATIVE: what the source claims about the\r
+interaction, not what this record claims about it. Enumerated at decode time in\r
+Phase 3, which is why the PolarityInvalid reason code cannot fire. An\r
+attribute of the edge, like modality: neither describes how the record\r
+came to exist, so neither carries PROV semantics."""@en ;
+    rdfs:domain kgp:KnowledgeGraphEdge ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ10" .
+
+kgp:promptHash a owl:DatatypeProperty ;
+    rdfs:comment """Content fingerprint of the instruction. Equality across\r
+model arms is what makes a tier comparison attributable to the model\r
+alone. The domain is the prompt entity, not prov:Plan: PROV-AGENT maps\r
+the instruction to an entity the activity used, and a domain of prov:Plan\r
+would re-derive the plan modelling that mapping replaced."""@en ;
+    rdfs:domain kgp:PromptTemplate ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ14" .
+
+kgp:qualifiedMembership a owl:ObjectProperty ;
+    rdfs:label "qualified membership"@en ;
+    rdfs:comment "Qualified form of prov:hadMember, carrying rank and score. Follows the PROV qualified pattern."@en ;
+    rdfs:domain kgp:ConstraintSpace ;
+    rdfs:range kgp:SpaceMembership ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:rank a owl:DatatypeProperty ;
+    rdfs:domain kgp:SpaceMembership ;
+    rdfs:range xsd:integer ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:score a owl:DatatypeProperty ;
+    rdfs:comment "Retrieval or re-ranking score. Records how close a non-selected member came."@en ;
+    rdfs:domain kgp:SpaceMembership ;
+    rdfs:range xsd:double ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:semanticCategory a owl:DatatypeProperty ;
+    rdfs:comment """CHEMICAL or DISEASE. A category is a value, not an\r
+entity with a lineage, so nothing derives from it and nothing generates\r
+it."""@en ;
+    rdfs:domain kgp:GroundedMention ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ11" .
+
+kgp:sourceUrl a owl:DatatypeProperty ;
+    rdfs:comment "The external location an attested claim was read from."@en ;
+    rdfs:domain prov:Entity ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ6" .
+
+kgp:spaceKind a owl:DatatypeProperty ;
+    rdfs:comment """Which admissible set this is. Four kinds bound a\r
+generation: top_k, window_cuis, predicate_enum, semantic_category_enum.\r
+The retrieval chain records seven more, one per stage: dense_top_k,\r
+sparse_top_k, fusion_input, fused_top_k, reranked, typed, final. A\r
+twelfth names the compacted source index."""@en ;
+    rdfs:domain kgp:ConstraintSpace ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ14",
+        "CQ2" .
+
+kgp:terminationReason a owl:DatatypeProperty ;
+    rdfs:label "termination reason"@en ;
+    rdfs:comment """Why an unbounded generative step ended:\r
+MODEL_CONCLUDED, BUDGET_EXHAUSTED, or TOOL_FAILURE. prov:endedAtTime\r
+records that an activity ended and PROV has no predicate for whether the\r
+agent concluded or the controller cut it off. The two yield identical\r
+lineage and different remedies: a budget-exhausted negative may resolve\r
+with a larger budget, a model-concluded one will not."""@en ;
+    rdfs:domain kgp:UnboundedGeneration ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ12",
+        "CQ13" .
+
+kgp:toolArguments a owl:DatatypeProperty ;
+    rdfs:label "tool arguments"@en ;
+    rdfs:comment """The arguments the model composed. The tool itself is a\r
+deterministic HTTP call; choosing what to ask it is the generative act, so\r
+recording only that a search occurred loses precisely the autonomy the\r
+step is meant to exhibit."""@en ;
+    rdfs:domain kgp:ToolInvocation ;
+    rdfs:range xsd:string ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:toolName a owl:DatatypeProperty ;
+    rdfs:comment "Which tool the model elected to call."@en ;
+    rdfs:domain kgp:ToolInvocation ;
+    rdfs:range xsd:string ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:wasConstrainedBy a owl:ObjectProperty ;
+    rdfs:label "was constrained by"@en ;
+    rdfs:comment "Relates a generative activity to the space bounding its output."@en ;
+    rdfs:domain prov:Activity ;
+    rdfs:range kgp:ConstraintSpace ;
+    rdfs:subPropertyOf prov:used ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ14",
+        "CQ2" .
+
+kgp:wasSelected a owl:DatatypeProperty ;
+    rdfs:domain kgp:SpaceMembership ;
+    rdfs:range xsd:boolean ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:GroundedMention a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ14",
+        "CQ2" .
+
+kgp:PromptTemplate a owl:Class ;
+    rdfs:comment "The system instruction, an entity the generative activity used, following PROV-AGENT. Carries prompt hash."@en ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ14" .
+
+kgp:Attestation a owl:Class ;
+    rdfs:label "Attestation"@en ;
+    rdfs:comment """An activity that checks an existing entity against an\r
+external authority without deriving it from that authority. Distinct from\r
+prov:wasDerivedFrom, which would assert a lineage relation that does not\r
+hold."""@en ;
+    rdfs:subClassOf prov:Activity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "MEDIUM" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13",
+        "CQ6" .
+
+kgp:GoldAnnotation a owl:Class ;
+    rdfs:comment """Reference annotation from an external corpus. NOT part of the\r
+derivation: it is an independent assessment of it, attributed to a human\r
+agent. How a gold standard attaches to a provenance graph is an open\r
+modelling question."""@en ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:KnowledgeGraphEdge a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ10",
+        "CQ9" .
+
+kgp:UnboundedGeneration a owl:Class ;
+    rdfs:label "Unbounded Generation"@en ;
+    rdfs:comment """An activity whose output space is not enumerable. Marks the\r
+top of the autonomy gradient: where constraint capture is impossible,\r
+attestation is the only available provenance. Tier 2 escalation."""@en ;
+    rdfs:subClassOf prov:Activity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ12",
+        "CQ13",
+        "CQ14" .
+
+kgp:VerificationCheck a owl:Class ;
+    rdfs:label "Verification Check"@en ;
+    rdfs:comment """One admission check applied to a claim returned by an\r
+unbounded agent. Recorded per check rather than as a single verdict: an\r
+identifier that exists but denotes another concept is a different failure\r
+from one that does not exist, and they have different remedies."""@en ;
+    rdfs:subClassOf prov:Activity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:CanonicalConceptID a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "domain" ;
+    kgp:motivatedByCQ "CQ12",
+        "CQ13" .
+
+kgp:ToolInvocation a owl:Class ;
+    rdfs:label "Tool Invocation"@en ;
+    rdfs:comment """An externally observable action taken by an agent. Unlike a\r
+generated rationale this IS retrospective provenance: it happened, it is\r
+timestamped, and it is independently verifiable. The minimal pair with\r
+GeneratedRationale is the clearest statement of the distinction."""@en ;
+    rdfs:subClassOf prov:Activity ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13",
+        "CQ14" .
+
+kgp:AttestationOutcome a owl:Class ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ13" .
+
+kgp:NarrowingActivity a owl:Class ;
+    rdfs:label "Narrowing Activity"@en ;
+    rdfs:comment "An activity whose function is to reduce a constraint space. Partitions its input into retained and excluded."@en ;
+    rdfs:subClassOf prov:Activity ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ3" .
+
+kgp:SpaceMembership a owl:Class ;
+    rdfs:label "Space Membership"@en ;
+    rdfs:comment "Reified membership of an entity in a constraint space, carrying rank, score and selection outcome."@en ;
+    rdfs:subClassOf prov:Influence ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ2" .
+
+kgp:RejectionReason a owl:Class ;
+    kgp:bucket "native" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ9" .
+
+kgp:ConstraintSpace a owl:Class ;
+    rdfs:label "Constraint Space"@en ;
+    rdfs:comment """The enumerated set of values an activity was permitted to\r
+generate. Distinct from an input: an input is data the activity read, a\r
+constraint space is a boundary the activity could not cross. Subclass of\r
+prov:Collection so that prov:hadMember carries membership for vanilla\r
+consumers."""@en ;
+    rdfs:subClassOf prov:Collection ;
+    kgp:bucket "extension" ;
+    kgp:captureCost "LOW" ;
+    kgp:module "core" ;
+    kgp:motivatedByCQ "CQ11",
+        "CQ14" .
+
